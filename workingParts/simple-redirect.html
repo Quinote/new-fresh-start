@@ -72,7 +72,7 @@
       }
       
       /* Print a files metadata.
-  @param {String} fileId ID of the file to print metadata for. */
+  @param {String} fileId ID of the file to print. */
   
 function printFile(fileId) {
 	console.log('reached');
@@ -94,6 +94,8 @@ var request = gapi.client.request({
       		console.log('\n');
       		console.log(resp);
       		
+      		console.log(resp.exportLinks);
+      		
       		downloadFile(resp,useContent);
       		}
       		else {
@@ -113,10 +115,20 @@ var request = gapi.client.request({
  
 function downloadFile(file, callback) {
   if (file.downloadUrl) {
+  	var url = file.downloadUrl;
+  }
+  else if (file.exportLinks) {
+  	var url = file.exportLinks['text/plain']; //later might have to try application/rtf
+  	console.log(url);
+  }
+  else {
+  	console.log('missing download url for file');
+  }
+
     var accessToken = gapi.auth.getToken().access_token;
-    if (accessToken) { console.log('sees access token'); }
+    //if (accessToken) { console.log('sees access token'); }
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', file.downloadUrl);
+    xhr.open('GET', url);
     xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
     xhr.onload = function() {
       callback(xhr.responseText);
@@ -125,32 +137,33 @@ function downloadFile(file, callback) {
       callback(null);
     };
     xhr.send();
-  } else {
-    callback(null);
-  }
+
 }
 
 function useContent(text) {
-	console.log('\n\ntext');
-	console.log(text);
+	console.log('\n\ntext received');
 	
 	cleanText = text.replace(/<\/?[^>]+(>|$)/g, "");
 	document.getElementById('display').innerHTML = cleanText;
 	}
 
 function getStateVars() {
-	var id = "<?php
-		if (isset($_GET['state'])) {
-    			$seeing=true;
-    
+	<?php
+		if (isset($_GET['state'])):
+			$seeing = true;
        	 		$state = json_decode(stripslashes($_GET['state']));
        			 $_SESSION['mode'] = $state->action;
+       	?>
 			
-			if (isset($state->ids)){
-          			echo $state->ids[0]; }} ?>";
-          
+	var id = "<?php if (isset($state->ids)){
+          			echo $state->ids[0]; } ?>";
+        var exportid = "<?php if (isset($state->exportIds)) {
+        			echo $state->exportIds[0]; } ?>";
+        <?php endif; ?>
+        
         console.log(id);
-        printFile(id);
+        console.log(exportid);
+        printFile(exportid);
 }	
 
 function setUpPage() {
