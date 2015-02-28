@@ -1,0 +1,76 @@
+<html>
+  <head>
+    <script src="https://apis.google.com/js/client.js"></script>
+    <script src="backend/backend.js"></script>
+    <script type="text/javascript">
+var id="";
+var exportid = "";
+
+
+function getStateVars() {
+	<?php
+		if (isset($_GET['state'])):
+			$seeing = true;
+       	 		$state = json_decode(stripslashes($_GET['state']));
+       			 $_SESSION['mode'] = $state->action;
+       	?>
+			
+	id = "<?php if (isset($state->ids)){
+          			echo $state->ids[0]; } ?>";
+        exportid = "<?php if (isset($state->exportIds)) {
+        			echo $state->exportIds[0]; } ?>";
+        <?php endif; ?>
+        
+        console.log(id);
+        console.log(exportid);
+}
+
+function onload() {
+	<?php if ($seeing) {
+	echo "handleClientLoad();";
+	}
+	else {
+	echo "console.log('something else');";
+	}
+	 ?>
+}
+
+/*
+* Gets file info from state variables
+* Gets file object
+* Gets text
+* Displays it
+*/
+function loadFile() {
+	getStateVars();
+	if(exportid != "") {
+	        getFileObj(exportid);
+	}
+	else if (id != "") {
+		getFileObj(id);
+	}
+	else {
+		console.log('no file id passed in state');
+	}
+}
+
+    </script>
+    
+  </head>
+  <body onload='onload();'>
+    The page<br />
+   
+    <?php 
+    if (isset($_GET['state'])) {
+    	/*this means were traveling here from google and you should load text editor*/
+    	echo "<textarea rows='6' cols='60' id='display'>holder div</textarea>";
+    	}
+    else {
+    	echo "Get QuiNote page<br />";
+    	echo "<button onclick='install();'>Get QuiNote!</button>";
+    	}
+?>
+    
+    
+</body>
+</html>
